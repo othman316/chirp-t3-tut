@@ -7,6 +7,8 @@ import { type RouterOutputs, api } from "~/utils/api";
 import Image from "next/image";
 import LoadingPage from "~/components/LoadingPage";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
+import LoadingSpinner from "~/components/LoadingSpinner";
 
 // why is this being used like this?
 dayjs.extend(relativeTime);
@@ -20,6 +22,14 @@ const CreatePostWizard = () => {
     onSuccess: () => {
       setPostContent("");
       void ctx.posts.getAll.invalidate();
+    },
+    onError: (error) => {
+      const errorMsg = error.data?.zodError?.fieldErrors.content;
+      if (errorMsg && errorMsg[0]) {
+        toast.error(errorMsg[0]);
+      } else {
+        toast.error("Failed to post! Please try again later.");
+      }
     },
   });
 
@@ -39,14 +49,28 @@ const CreatePostWizard = () => {
         className="grow bg-transparent outline-none"
         value={postContent}
         onChange={(e) => setPostContent(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (postContent !== "") {
+              mutate({ content: postContent });
+            }
+          }
+        }}
       />
-      <button
-        className="text-3xl"
-        onClick={() => mutate({ content: postContent })}
-        disabled={isPosting || postContent === ""}
-      >
-        📫
-      </button>
+      {postContent !== "" && !isPosting && (
+        <button
+          className="text-3xl"
+          onClick={() => mutate({ content: postContent })}
+        >
+          📫
+        </button>
+      )}
+      {isPosting && (
+        <div className="flex items-center justify-center">
+          <LoadingSpinner size={20} />
+        </div>
+      )}
     </div>
   );
 };
