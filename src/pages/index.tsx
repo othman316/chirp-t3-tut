@@ -9,6 +9,7 @@ import LoadingPage from "~/components/LoadingPage";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "~/components/LoadingSpinner";
+import Link from "next/link";
 
 // why is this being used like this?
 dayjs.extend(relativeTime);
@@ -27,8 +28,10 @@ const CreatePostWizard = () => {
       const errorMsg = error.data?.zodError?.fieldErrors.content;
       if (errorMsg && errorMsg[0]) {
         toast.error(errorMsg[0]);
+      } else if (error.message) {
+        toast.error(error.message);
       } else {
-        toast.error("Failed to post! Please try again later.");
+        toast.error("🫠 Failed to post! Please try again later.");
       }
     },
   });
@@ -80,20 +83,24 @@ const PostView = (props: postWithAuthor) => {
   const { post, author } = props;
   return (
     <div className=" flex gap-3 border-b border-slate-400 p-4" key={post.id}>
-      <Image
-        src={author.profileImageUrl}
-        alt={`@${author.username}'s profile picture`}
-        className="h-14 w-14 rounded-full"
-        width={56}
-        height={56}
-      />
+      <Link href={`/@${author.username}`}>
+        <Image
+          src={author.profileImageUrl}
+          alt={`@${author.username}'s profile picture`}
+          className="h-14 w-14 rounded-full"
+          width={56}
+          height={56}
+        />
+      </Link>
       <div className="flex flex-col">
         <div className="gap2 text-slate flex gap-1 ">
-          <span>{`@${author.username}`}</span>
-          <span className="font-bold">·</span>
-          <span className="font-thin">{`${dayjs(
-            post.createdAt
-          ).fromNow()}`}</span>
+          <Link href={`/@${author.username}`}>{`@${author.username}`}</Link>
+          <Link href={`/post/${post.id}`}>
+            <span className="font-bold">· </span>
+            <span className="font-thin">{`${dayjs(
+              post.createdAt
+            ).fromNow()}`}</span>
+          </Link>
         </div>
         <span className="text-2xl">{post.content}</span>
       </div>

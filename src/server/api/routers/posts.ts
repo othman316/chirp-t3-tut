@@ -39,12 +39,12 @@ export const postsRouter = createTRPCRouter({
         })
     }),
     create: privateProcedure.input(z.object({
-        content: z.string().emoji("Only emojis are allowed!").min(1).max(280)
+        content: z.string().emoji("💩 Only emojis are allowed!").min(1).max(280)
     })).mutation(async ({ ctx, input }) => {
         const authorId = ctx.currentUserId
         const { success } = await ratelimit.limit(authorId)
 
-        if (!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+        if (!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "😫You are being rate limited, you only get 3 posts a minute!" })
 
         const post = await ctx.prisma.post.create({
             data: { authorId, content: input.content, }
