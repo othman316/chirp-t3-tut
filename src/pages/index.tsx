@@ -6,15 +6,24 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { type RouterOutputs, api } from "~/utils/api";
 import Image from "next/image";
 import LoadingPage from "~/components/LoadingPage";
+import { useState } from "react";
 
 // why is this being used like this?
 dayjs.extend(relativeTime);
 
 const CreatePostWizard = () => {
   const { user } = useUser();
+  const [postContent, setPostContent] = useState<string>("");
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setPostContent("");
+      void ctx.posts.getAll.invalidate();
+    },
+  });
 
   if (!user || !user.username) return <LoadingPage />;
-
   return (
     <div className="flex w-full gap-3 ">
       <Image
@@ -25,9 +34,19 @@ const CreatePostWizard = () => {
         height={56}
       />
       <input
+        type="text"
         placeholder="type some emojis!"
         className="grow bg-transparent outline-none"
+        value={postContent}
+        onChange={(e) => setPostContent(e.target.value)}
       />
+      <button
+        className="text-3xl"
+        onClick={() => mutate({ content: postContent })}
+        disabled={isPosting || postContent === ""}
+      >
+        📫
+      </button>
     </div>
   );
 };
@@ -64,7 +83,7 @@ const Feed = () => {
   if (!data) return <div>somehting went wrong 😥</div>;
   return (
     <div className="flex flex-col">
-      {[...data, ...data]?.map((fullPost) => (
+      {data?.map((fullPost) => (
         <PostView key={fullPost.post.id} {...fullPost} />
       ))}
     </div>
