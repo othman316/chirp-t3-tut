@@ -6,7 +6,7 @@ interface ProfileFeedProps {
   userId: string;
 }
 const ProfileFeed = ({ userId }: ProfileFeedProps) => {
-  const { data: posts, isLoading } = api.posts.getPostByUserId.useQuery({
+  const { data: posts, isLoading } = api.posts.getPostsByUserId.useQuery({
     userId,
   });
   if (isLoading) return <LoadingPage />;
